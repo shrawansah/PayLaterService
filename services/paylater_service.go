@@ -1,12 +1,14 @@
 package services
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/gorilla/mux"
 	. "simpl.com/loggers"
 
-	endpoints "simpl.com/endpoints"
+	"simpl.com/databases"
+	"simpl.com/repositories"
 )
 
 type services interface {
@@ -14,14 +16,18 @@ type services interface {
 }
 
 type simplePaylaterService struct {
-
+	Database 			*sql.DB
+	MerchantRepository  repositories.MerchantsRepository
 }
 
 func NewSimplePaylaterService() services {
 
 	defer Logger.Info("SimplePaylaterService initialization complete")
 
-	return simplePaylaterService{}
+	return simplePaylaterService{
+		Database: databases.GetConnection(),
+		MerchantRepository: repositories.NewMerchantsRepository(databases.GetConnection()),
+	}
 }
 
 func (simplePaylaterService simplePaylaterService) StartServing() {
@@ -30,15 +36,16 @@ func (simplePaylaterService simplePaylaterService) StartServing() {
 	router := mux.NewRouter().StrictSlash(true)
 
 	// merchant enpoints
-	router.HandleFunc("/merchant/create", endpoints.CreateMerchantEndpointHandler).Methods("POST")
-	router.HandleFunc("/merchant/update", endpoints.UpdateMerchantEndpointHandler).Methods("PATCH")
+	router.HandleFunc("/merchant/{id}", simplePaylaterService.GetMerchantInfoEndpointHandler).Methods("GET")
+	router.HandleFunc("/merchant/create", simplePaylaterService.CreateMerchantEndpointHandler).Methods("POST")
+	router.HandleFunc("/merchant/update", simplePaylaterService.UpdateMerchantEndpointHandler).Methods("PATCH")
 
 	// user endpoints
-	router.HandleFunc("/user/create", endpoints.CreateUserEndpointHandler).Methods("POST")
+	router.HandleFunc("/user/create", simplePaylaterService.CreateUserEndpointHandler).Methods("POST")
 
 	// transaction endpoints
-	router.HandleFunc("/transaction/new", endpoints.NewTransactionEndpointHandler).Methods("POST")
+	router.HandleFunc("/transaction/new", simplePaylaterService.NewTransactionEndpointHandler).Methods("POST")
 
-	Logger.Info("Serve attempt on port 8085")
+	Logger.Info("Serving on port 8085")
 	Logger.Error(http.ListenAndServe(":8085", router))
 }

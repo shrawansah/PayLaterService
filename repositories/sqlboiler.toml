@@ -1,0 +1,16 @@
+output   = "models"
+wipe     = true
+no-tests = true
+
+[mysql]
+  dbname  = "simpl_paylater"
+  host    = "127.0.0.1"
+  port    = 3306
+  user    = "root"
+  pass    = "iuseNOTE4@OHAAHAI"
+  sslmode = "false"
+  whitelist = [
+      "merchants",
+      "users",
+      "transactions"
+  ]

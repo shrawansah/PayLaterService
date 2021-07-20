@@ -41,3 +41,6 @@ SQlBoiler (https://github.com/volatiletech/sqlboiler)
 
 
 
+## generate models
+cd to repositories
+$PWD/sqlboiler --wipe --no-tests mysql
