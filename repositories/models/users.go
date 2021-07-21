@@ -24,7 +24,7 @@ import (
 
 // User is an object representing the database table.
 type User struct {
-	ID          int          `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ID          int64        `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Name        string       `boil:"name" json:"name" toml:"name" yaml:"name"`
 	EmailID     string       `boil:"email_id" json:"email_id" toml:"email_id" yaml:"email_id"`
 	CreditLimit null.Float64 `boil:"credit_limit" json:"credit_limit,omitempty" toml:"credit_limit" yaml:"credit_limit,omitempty"`
@@ -75,7 +75,7 @@ var UserTableColumns = struct {
 // Generated where
 
 var UserWhere = struct {
-	ID          whereHelperint
+	ID          whereHelperint64
 	Name        whereHelperstring
 	EmailID     whereHelperstring
 	CreditLimit whereHelpernull_Float64
@@ -83,7 +83,7 @@ var UserWhere = struct {
 	CreatedAt   whereHelpernull_Time
 	UpdatedAt   whereHelpernull_Time
 }{
-	ID:          whereHelperint{field: "`users`.`id`"},
+	ID:          whereHelperint64{field: "`users`.`id`"},
 	Name:        whereHelperstring{field: "`users`.`name`"},
 	EmailID:     whereHelperstring{field: "`users`.`email_id`"},
 	CreditLimit: whereHelpernull_Float64{field: "`users`.`credit_limit`"},
@@ -398,7 +398,7 @@ func Users(mods ...qm.QueryMod) userQuery {
 
 // FindUser retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindUser(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) (*User, error) {
+func FindUser(ctx context.Context, exec boil.ContextExecutor, iD int64, selectCols ...string) (*User, error) {
 	userObj := &User{}
 
 	sel := "*"
@@ -513,7 +513,7 @@ func (o *User) Insert(ctx context.Context, exec boil.ContextExecutor, columns bo
 		return ErrSyncFail
 	}
 
-	o.ID = int(lastID)
+	o.ID = int64(lastID)
 	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == userMapping["id"] {
 		goto CacheNoHooks
 	}
@@ -801,7 +801,7 @@ func (o *User) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColu
 		return ErrSyncFail
 	}
 
-	o.ID = int(lastID)
+	o.ID = int64(lastID)
 	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == userMapping["id"] {
 		goto CacheNoHooks
 	}
@@ -980,7 +980,7 @@ func (o *UserSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) er
 }
 
 // UserExists checks if the User row exists.
-func UserExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
+func UserExists(ctx context.Context, exec boil.ContextExecutor, iD int64) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `users` where `id`=? limit 1)"
 

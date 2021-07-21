@@ -24,7 +24,7 @@ import (
 
 // Merchant is an object representing the database table.
 type Merchant struct {
-	ID              int          `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ID              int64        `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Name            string       `boil:"name" json:"name" toml:"name" yaml:"name"`
 	DiscountPercent null.Float64 `boil:"discount_percent" json:"discount_percent,omitempty" toml:"discount_percent" yaml:"discount_percent,omitempty"`
 	CreatedAt       null.Time    `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
@@ -64,22 +64,22 @@ var MerchantTableColumns = struct {
 
 // Generated where
 
-type whereHelperint struct{ field string }
+type whereHelperint64 struct{ field string }
 
-func (w whereHelperint) EQ(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
-func (w whereHelperint) NEQ(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
-func (w whereHelperint) LT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
-func (w whereHelperint) LTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
-func (w whereHelperint) GT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
-func (w whereHelperint) GTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
-func (w whereHelperint) IN(slice []int) qm.QueryMod {
+func (w whereHelperint64) EQ(x int64) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperint64) NEQ(x int64) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperint64) LT(x int64) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperint64) LTE(x int64) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperint64) GT(x int64) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperint64) GTE(x int64) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+func (w whereHelperint64) IN(slice []int64) qm.QueryMod {
 	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
-func (w whereHelperint) NIN(slice []int) qm.QueryMod {
+func (w whereHelperint64) NIN(slice []int64) qm.QueryMod {
 	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
@@ -157,13 +157,13 @@ func (w whereHelpernull_Time) GTE(x null.Time) qm.QueryMod {
 }
 
 var MerchantWhere = struct {
-	ID              whereHelperint
+	ID              whereHelperint64
 	Name            whereHelperstring
 	DiscountPercent whereHelpernull_Float64
 	CreatedAt       whereHelpernull_Time
 	UpdatedAt       whereHelpernull_Time
 }{
-	ID:              whereHelperint{field: "`merchants`.`id`"},
+	ID:              whereHelperint64{field: "`merchants`.`id`"},
 	Name:            whereHelperstring{field: "`merchants`.`name`"},
 	DiscountPercent: whereHelpernull_Float64{field: "`merchants`.`discount_percent`"},
 	CreatedAt:       whereHelpernull_Time{field: "`merchants`.`created_at`"},
@@ -476,7 +476,7 @@ func Merchants(mods ...qm.QueryMod) merchantQuery {
 
 // FindMerchant retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindMerchant(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) (*Merchant, error) {
+func FindMerchant(ctx context.Context, exec boil.ContextExecutor, iD int64, selectCols ...string) (*Merchant, error) {
 	merchantObj := &Merchant{}
 
 	sel := "*"
@@ -591,7 +591,7 @@ func (o *Merchant) Insert(ctx context.Context, exec boil.ContextExecutor, column
 		return ErrSyncFail
 	}
 
-	o.ID = int(lastID)
+	o.ID = int64(lastID)
 	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == merchantMapping["id"] {
 		goto CacheNoHooks
 	}
@@ -879,7 +879,7 @@ func (o *Merchant) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 		return ErrSyncFail
 	}
 
-	o.ID = int(lastID)
+	o.ID = int64(lastID)
 	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == merchantMapping["id"] {
 		goto CacheNoHooks
 	}
@@ -1058,7 +1058,7 @@ func (o *MerchantSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 }
 
 // MerchantExists checks if the Merchant row exists.
-func MerchantExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
+func MerchantExists(ctx context.Context, exec boil.ContextExecutor, iD int64) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `merchants` where `id`=? limit 1)"
 

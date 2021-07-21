@@ -24,9 +24,9 @@ import (
 
 // Transaction is an object representing the database table.
 type Transaction struct {
-	ID             int          `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID         int          `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	MerchantID     int          `boil:"merchant_id" json:"merchant_id" toml:"merchant_id" yaml:"merchant_id"`
+	ID             int64        `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID         uint64       `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	MerchantID     uint64       `boil:"merchant_id" json:"merchant_id" toml:"merchant_id" yaml:"merchant_id"`
 	TotalAmount    float64      `boil:"total_amount" json:"total_amount" toml:"total_amount" yaml:"total_amount"`
 	DiscountAmount null.Float64 `boil:"discount_amount" json:"discount_amount,omitempty" toml:"discount_amount" yaml:"discount_amount,omitempty"`
 	PaidAmount     float64      `boil:"paid_amount" json:"paid_amount" toml:"paid_amount" yaml:"paid_amount"`
@@ -79,6 +79,29 @@ var TransactionTableColumns = struct {
 
 // Generated where
 
+type whereHelperuint64 struct{ field string }
+
+func (w whereHelperuint64) EQ(x uint64) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperuint64) NEQ(x uint64) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperuint64) LT(x uint64) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperuint64) LTE(x uint64) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperuint64) GT(x uint64) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperuint64) GTE(x uint64) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+func (w whereHelperuint64) IN(slice []uint64) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelperuint64) NIN(slice []uint64) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
 type whereHelperfloat64 struct{ field string }
 
 func (w whereHelperfloat64) EQ(x float64) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.EQ, x) }
@@ -130,18 +153,18 @@ func (w whereHelpertime_Time) GTE(x time.Time) qm.QueryMod {
 }
 
 var TransactionWhere = struct {
-	ID             whereHelperint
-	UserID         whereHelperint
-	MerchantID     whereHelperint
+	ID             whereHelperint64
+	UserID         whereHelperuint64
+	MerchantID     whereHelperuint64
 	TotalAmount    whereHelperfloat64
 	DiscountAmount whereHelpernull_Float64
 	PaidAmount     whereHelperfloat64
 	CreatedAt      whereHelpertime_Time
 	ModifiedAt     whereHelpertime_Time
 }{
-	ID:             whereHelperint{field: "`transactions`.`id`"},
-	UserID:         whereHelperint{field: "`transactions`.`user_id`"},
-	MerchantID:     whereHelperint{field: "`transactions`.`merchant_id`"},
+	ID:             whereHelperint64{field: "`transactions`.`id`"},
+	UserID:         whereHelperuint64{field: "`transactions`.`user_id`"},
+	MerchantID:     whereHelperuint64{field: "`transactions`.`merchant_id`"},
 	TotalAmount:    whereHelperfloat64{field: "`transactions`.`total_amount`"},
 	DiscountAmount: whereHelpernull_Float64{field: "`transactions`.`discount_amount`"},
 	PaidAmount:     whereHelperfloat64{field: "`transactions`.`paid_amount`"},
@@ -167,8 +190,8 @@ type transactionL struct{}
 
 var (
 	transactionAllColumns            = []string{"id", "user_id", "merchant_id", "total_amount", "discount_amount", "paid_amount", "created_at", "modified_at"}
-	transactionColumnsWithoutDefault = []string{"id", "user_id", "merchant_id", "total_amount", "paid_amount"}
-	transactionColumnsWithDefault    = []string{"discount_amount", "created_at", "modified_at"}
+	transactionColumnsWithoutDefault = []string{"user_id", "merchant_id", "total_amount", "paid_amount"}
+	transactionColumnsWithDefault    = []string{"id", "discount_amount", "created_at", "modified_at"}
 	transactionPrimaryKeyColumns     = []string{"id"}
 )
 
@@ -455,7 +478,7 @@ func Transactions(mods ...qm.QueryMod) transactionQuery {
 
 // FindTransaction retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindTransaction(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) (*Transaction, error) {
+func FindTransaction(ctx context.Context, exec boil.ContextExecutor, iD int64, selectCols ...string) (*Transaction, error) {
 	transactionObj := &Transaction{}
 
 	sel := "*"
@@ -549,15 +572,26 @@ func (o *Transaction) Insert(ctx context.Context, exec boil.ContextExecutor, col
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	_, err = exec.ExecContext(ctx, cache.query, vals...)
+	result, err := exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to insert into transactions")
 	}
 
+	var lastID int64
 	var identifierCols []interface{}
 
 	if len(cache.retMapping) == 0 {
+		goto CacheNoHooks
+	}
+
+	lastID, err = result.LastInsertId()
+	if err != nil {
+		return ErrSyncFail
+	}
+
+	o.ID = int64(lastID)
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == transactionMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -818,16 +852,27 @@ func (o *Transaction) Upsert(ctx context.Context, exec boil.ContextExecutor, upd
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	_, err = exec.ExecContext(ctx, cache.query, vals...)
+	result, err := exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to upsert for transactions")
 	}
 
+	var lastID int64
 	var uniqueMap []uint64
 	var nzUniqueCols []interface{}
 
 	if len(cache.retMapping) == 0 {
+		goto CacheNoHooks
+	}
+
+	lastID, err = result.LastInsertId()
+	if err != nil {
+		return ErrSyncFail
+	}
+
+	o.ID = int64(lastID)
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == transactionMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -1005,7 +1050,7 @@ func (o *TransactionSlice) ReloadAll(ctx context.Context, exec boil.ContextExecu
 }
 
 // TransactionExists checks if the Transaction row exists.
-func TransactionExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
+func TransactionExists(ctx context.Context, exec boil.ContextExecutor, iD int64) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `transactions` where `id`=? limit 1)"
 
