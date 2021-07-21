@@ -1,14 +1,14 @@
-package merchantreport
+package userreport
 
 import (
 	"encoding/json"
 )
 
-type MerchantReportRequest struct {
+type UserReportRequest struct {
 	ID 		string
 }
 
-func (merchantReportRequest *MerchantReportRequest) ToString() string {
-	bytes, _ := json.Marshal(merchantReportRequest)
+func (userReportRequest *UserReportRequest) ToString() string {
+	bytes, _ := json.Marshal(userReportRequest)
 	return string(bytes)
 }

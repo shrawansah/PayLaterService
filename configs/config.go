@@ -9,6 +9,8 @@ type configs struct {
 	DBPort 		string
 	DBSchema 	string
 	DBDriver	string
+
+	UserAtCreditLimitThreshold int64
 }
 
 var Configs = configs {
@@ -20,4 +22,6 @@ var Configs = configs {
 	DBSchema: "simpl_paylater",
 	DBPort: "3306",
 	DBDriver: "mysql",
+
+	UserAtCreditLimitThreshold: 10,
 }

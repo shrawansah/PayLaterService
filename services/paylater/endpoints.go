@@ -12,6 +12,7 @@ import (
 
 	"simpl.com/endpoints/user/create"
 	"simpl.com/endpoints/user/payback"
+	"simpl.com/endpoints/user/report"
 
 	"simpl.com/endpoints/transaction/create"
 
@@ -238,6 +239,46 @@ func (service simplePaylaterService) PaybackUserEndpointHandler(w http.ResponseW
 
 	// business logic
 	response, businessError := paybackUserCommand.ExecuteBusinessLogic()
+	if !businessError.IsNil() {
+		w.WriteHeader(businessError.ClientHTTPCode)
+		response = businessError.ClientMessage
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+func (service simplePaylaterService) UserReportEndpointHandler(w http.ResponseWriter, r *http.Request) {
+	
+	var userReportRequest userreport.UserReportRequest
+	var response interface{}
+
+	defer func() {
+		bytes, _ := json.Marshal(response)
+		Logger.Info(string(bytes))
+		json.NewEncoder(w).Encode(response)
+	}()
+
+	// decode
+	if err := userReportRequest.Decode(r); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		response = "invalid request format"
+		return
+	}
+
+	// validate
+	if errors := userReportRequest.Validate(); len(errors) > 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		response = errors
+		return
+	}
+
+	// command
+	userReportCommand := userreport.UserReportCommand{}
+	userReportCommand.BuildFromRequest(&userReportRequest)
+
+	// business logic
+	response, businessError := userReportCommand.ExecuteBusinessLogic()
 	if !businessError.IsNil() {
 		w.WriteHeader(businessError.ClientHTTPCode)
 		response = businessError.ClientMessage

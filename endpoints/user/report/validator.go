@@ -1,15 +1,7 @@
-package merchantreport
+package userreport
 
-import (
-	"strings"
-)
-
-func (merchantReportRequest *MerchantReportRequest) Validate() []string {
+func (userReportRequest *UserReportRequest) Validate() []string {
 	var err []string
-
-	if strings.TrimSpace(merchantReportRequest.ID) == "" {
-		err = append(err, "required merchant ID in URL")
-	}
 
 	return err
 }

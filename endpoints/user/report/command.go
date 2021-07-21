@@ -1,4 +1,4 @@
-package merchantreport
+package userreport
 
 import (
 	"encoding/json"
@@ -6,18 +6,21 @@ import (
 	. "simpl.com/loggers"
 )
 
-type MerchantReportCommand struct {
+type UserReportCommand struct {
 	ID string
 }
 
-func (merchantReportCommand *MerchantReportCommand) ToString() string {
-	bytes, _ := json.Marshal(merchantReportCommand)
+func (userReportCommand *UserReportCommand) ToString() string {
+	bytes, _ := json.Marshal(userReportCommand)
 	return string(bytes)
 }
 
 
-func (command *MerchantReportCommand) BuildFromRequest(request *MerchantReportRequest) {
+func (command *UserReportCommand) BuildFromRequest(request *UserReportRequest) {
 
 	command.ID = request.ID
-	Logger.Info("MerchantReportCommand :: ", command.ToString())
+	if request.ID == "all" {
+		command.ID = ""
+	}
+	Logger.Info("UserReportCommand :: ", command.ToString())
 }

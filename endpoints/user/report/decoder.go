@@ -1,4 +1,4 @@
-package merchantreport
+package userreport
 
 import (
 	"net/http"
@@ -7,10 +7,10 @@ import (
 	. "simpl.com/loggers"
 )
 
-func (merchantReportRequest *MerchantReportRequest) Decode(r *http.Request) error {
+func (userReportRequest *UserReportRequest) Decode(r *http.Request) error {
 	merchantID := mux.Vars(r)["id"]
-	merchantReportRequest.ID = merchantID
+	userReportRequest.ID = merchantID
 
-	Logger.Info("CreateMerchantRequest :: ", merchantReportRequest.ToString())
+	Logger.Info("CreateMerchantRequest :: ", userReportRequest.ToString())
 	return nil
 }
