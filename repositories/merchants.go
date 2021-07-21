@@ -74,20 +74,20 @@ Helper structs
 **/
 type totalStatistics struct {
 	TotalTransactionCount     		sql.NullInt64  `json:"total_transaction_count" boil:"total_transaction_count"`
-	TotalTransactionAmount          sql.NullFloat64  `json:"total_transaction_amount" boil:"total_transaction_amount"`
-	TotalDiscountAmount          	sql.NullFloat64 `json:"total_discount_amount" boil:"total_discount_amount"` 
-	TotalPaidAmount     			sql.NullFloat64  `json:"total_paid_amount" boil:"total_paid_amount"`
+	TotalTransactionAmount          sql.NullInt64  `json:"total_transaction_amount" boil:"total_transaction_amount"`
+	TotalDiscountAmount          	sql.NullInt64 `json:"total_discount_amount" boil:"total_discount_amount"` 
+	TotalPaidAmount     			sql.NullInt64  `json:"total_paid_amount" boil:"total_paid_amount"`
 }
 
 type StatisticsPropagator struct {
 	TotalTransactionCount     		int64  		`json:"total_transaction_count" boil:"total_transaction_count"`
-	TotalTransactionAmount          float64     `json:"total_transaction_amount" boil:"total_transaction_amount"`
-	TotalDiscountAmount          	float64		`json:"total_discount_amount" boil:"total_discount_amount"` 
-	TotalPaidAmount     			float64     `json:"total_paid_amount" boil:"total_paid_amount"`
+	TotalTransactionAmount          int64     `json:"total_transaction_amount" boil:"total_transaction_amount"`
+	TotalDiscountAmount          	int64		`json:"total_discount_amount" boil:"total_discount_amount"` 
+	TotalPaidAmount     			int64     `json:"total_paid_amount" boil:"total_paid_amount"`
 }
 func (statisticsPropagator *StatisticsPropagator) fromTotalStatisticts(stats *totalStatistics) {
 	statisticsPropagator.TotalTransactionCount = stats.TotalTransactionCount.Int64
-	statisticsPropagator.TotalDiscountAmount = stats.TotalDiscountAmount.Float64
-	statisticsPropagator.TotalPaidAmount = stats.TotalPaidAmount.Float64
-	statisticsPropagator.TotalTransactionAmount = stats.TotalTransactionAmount.Float64
+	statisticsPropagator.TotalDiscountAmount = stats.TotalDiscountAmount.Int64
+	statisticsPropagator.TotalPaidAmount = stats.TotalPaidAmount.Int64
+	statisticsPropagator.TotalTransactionAmount = stats.TotalTransactionAmount.Int64
 }

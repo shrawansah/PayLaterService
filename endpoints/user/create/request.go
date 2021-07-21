@@ -7,7 +7,7 @@ import (
 type CreateUserRequest struct {
 	Name 				string      `json:"name"`
 	Email			 	string		`json:"email"`
-	CreditLimit			float64		`json:"credit_limit"`
+	CreditLimit			int64		`json:"credit_limit"`
 }
 
 func (createUserRequest *CreateUserRequest) ToString() string {

@@ -117,7 +117,7 @@ func (service simplePaylaterService) UpdateMerchantEndpointHandler(w http.Respon
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusOK)
 }
 
 func (service simplePaylaterService) GenerateMerchantReportEndpointHandler(w http.ResponseWriter, r *http.Request) {
@@ -156,7 +156,7 @@ func (service simplePaylaterService) GenerateMerchantReportEndpointHandler(w htt
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusOK)
 }
 /**
 Merchant Endpoints Ends

@@ -10,7 +10,7 @@ import (
 type CreateUserCommand struct {
 	Name 				string      `json:"name"`
 	Email			 	string		`json:"email"`
-	CreditLimit			float64		`json:"credit_limit"`
+	CreditLimit			int64		`json:"credit_limit"`
 }
 
 func (createUserCommand *CreateUserCommand) ToString() string {

@@ -7,7 +7,7 @@ import (
 type CreateTransactionRequest struct {
 	UserID 		uint64      `json:"user_id"`
 	MerchantID 	uint64		`json:"merchant_id"`
-	Amount		float64		`json:"amount"`
+	Amount		int64		`json:"amount"`
 }
 
 func (createTransactionRequest *CreateTransactionRequest) ToString() string {

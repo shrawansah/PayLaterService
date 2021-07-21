@@ -24,13 +24,13 @@ import (
 
 // User is an object representing the database table.
 type User struct {
-	ID          int64        `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name        string       `boil:"name" json:"name" toml:"name" yaml:"name"`
-	EmailID     string       `boil:"email_id" json:"email_id" toml:"email_id" yaml:"email_id"`
-	CreditLimit null.Float64 `boil:"credit_limit" json:"credit_limit,omitempty" toml:"credit_limit" yaml:"credit_limit,omitempty"`
-	DueAmount   null.Float64 `boil:"due_amount" json:"due_amount,omitempty" toml:"due_amount" yaml:"due_amount,omitempty"`
-	CreatedAt   null.Time    `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
-	UpdatedAt   null.Time    `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
+	ID          int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name        string    `boil:"name" json:"name" toml:"name" yaml:"name"`
+	EmailID     string    `boil:"email_id" json:"email_id" toml:"email_id" yaml:"email_id"`
+	CreditLimit int64     `boil:"credit_limit" json:"credit_limit" toml:"credit_limit" yaml:"credit_limit"`
+	DueAmount   int64     `boil:"due_amount" json:"due_amount" toml:"due_amount" yaml:"due_amount"`
+	CreatedAt   null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
+	UpdatedAt   null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
 
 	R *userR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -78,16 +78,16 @@ var UserWhere = struct {
 	ID          whereHelperint64
 	Name        whereHelperstring
 	EmailID     whereHelperstring
-	CreditLimit whereHelpernull_Float64
-	DueAmount   whereHelpernull_Float64
+	CreditLimit whereHelperint64
+	DueAmount   whereHelperint64
 	CreatedAt   whereHelpernull_Time
 	UpdatedAt   whereHelpernull_Time
 }{
 	ID:          whereHelperint64{field: "`users`.`id`"},
 	Name:        whereHelperstring{field: "`users`.`name`"},
 	EmailID:     whereHelperstring{field: "`users`.`email_id`"},
-	CreditLimit: whereHelpernull_Float64{field: "`users`.`credit_limit`"},
-	DueAmount:   whereHelpernull_Float64{field: "`users`.`due_amount`"},
+	CreditLimit: whereHelperint64{field: "`users`.`credit_limit`"},
+	DueAmount:   whereHelperint64{field: "`users`.`due_amount`"},
 	CreatedAt:   whereHelpernull_Time{field: "`users`.`created_at`"},
 	UpdatedAt:   whereHelpernull_Time{field: "`users`.`updated_at`"},
 }
@@ -110,8 +110,8 @@ type userL struct{}
 
 var (
 	userAllColumns            = []string{"id", "name", "email_id", "credit_limit", "due_amount", "created_at", "updated_at"}
-	userColumnsWithoutDefault = []string{"name", "email_id", "credit_limit", "due_amount"}
-	userColumnsWithDefault    = []string{"id", "created_at", "updated_at"}
+	userColumnsWithoutDefault = []string{"name", "email_id"}
+	userColumnsWithDefault    = []string{"id", "credit_limit", "due_amount", "created_at", "updated_at"}
 	userPrimaryKeyColumns     = []string{"id"}
 )
 

@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,14 +23,14 @@ import (
 
 // Transaction is an object representing the database table.
 type Transaction struct {
-	ID             int64        `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID         uint64       `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	MerchantID     uint64       `boil:"merchant_id" json:"merchant_id" toml:"merchant_id" yaml:"merchant_id"`
-	TotalAmount    float64      `boil:"total_amount" json:"total_amount" toml:"total_amount" yaml:"total_amount"`
-	DiscountAmount null.Float64 `boil:"discount_amount" json:"discount_amount,omitempty" toml:"discount_amount" yaml:"discount_amount,omitempty"`
-	PaidAmount     float64      `boil:"paid_amount" json:"paid_amount" toml:"paid_amount" yaml:"paid_amount"`
-	CreatedAt      time.Time    `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	ModifiedAt     time.Time    `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
+	ID             int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID         uint64    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	MerchantID     uint64    `boil:"merchant_id" json:"merchant_id" toml:"merchant_id" yaml:"merchant_id"`
+	TotalAmount    int64     `boil:"total_amount" json:"total_amount" toml:"total_amount" yaml:"total_amount"`
+	DiscountAmount int64     `boil:"discount_amount" json:"discount_amount" toml:"discount_amount" yaml:"discount_amount"`
+	PaidAmount     int64     `boil:"paid_amount" json:"paid_amount" toml:"paid_amount" yaml:"paid_amount"`
+	CreatedAt      time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ModifiedAt     time.Time `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
 
 	R *transactionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L transactionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -102,35 +101,6 @@ func (w whereHelperuint64) NIN(slice []uint64) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
-type whereHelperfloat64 struct{ field string }
-
-func (w whereHelperfloat64) EQ(x float64) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.EQ, x) }
-func (w whereHelperfloat64) NEQ(x float64) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.NEQ, x)
-}
-func (w whereHelperfloat64) LT(x float64) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LT, x) }
-func (w whereHelperfloat64) LTE(x float64) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelperfloat64) GT(x float64) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GT, x) }
-func (w whereHelperfloat64) GTE(x float64) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-func (w whereHelperfloat64) IN(slice []float64) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelperfloat64) NIN(slice []float64) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
-
 type whereHelpertime_Time struct{ field string }
 
 func (w whereHelpertime_Time) EQ(x time.Time) qm.QueryMod {
@@ -156,18 +126,18 @@ var TransactionWhere = struct {
 	ID             whereHelperint64
 	UserID         whereHelperuint64
 	MerchantID     whereHelperuint64
-	TotalAmount    whereHelperfloat64
-	DiscountAmount whereHelpernull_Float64
-	PaidAmount     whereHelperfloat64
+	TotalAmount    whereHelperint64
+	DiscountAmount whereHelperint64
+	PaidAmount     whereHelperint64
 	CreatedAt      whereHelpertime_Time
 	ModifiedAt     whereHelpertime_Time
 }{
 	ID:             whereHelperint64{field: "`transactions`.`id`"},
 	UserID:         whereHelperuint64{field: "`transactions`.`user_id`"},
 	MerchantID:     whereHelperuint64{field: "`transactions`.`merchant_id`"},
-	TotalAmount:    whereHelperfloat64{field: "`transactions`.`total_amount`"},
-	DiscountAmount: whereHelpernull_Float64{field: "`transactions`.`discount_amount`"},
-	PaidAmount:     whereHelperfloat64{field: "`transactions`.`paid_amount`"},
+	TotalAmount:    whereHelperint64{field: "`transactions`.`total_amount`"},
+	DiscountAmount: whereHelperint64{field: "`transactions`.`discount_amount`"},
+	PaidAmount:     whereHelperint64{field: "`transactions`.`paid_amount`"},
 	CreatedAt:      whereHelpertime_Time{field: "`transactions`.`created_at`"},
 	ModifiedAt:     whereHelpertime_Time{field: "`transactions`.`modified_at`"},
 }

@@ -3,7 +3,6 @@ package createuser
 import (
 	"net/http"
 
-	"github.com/volatiletech/null/v8"
 	. "simpl.com/loggers"
 	. "simpl.com/repositories"
 	"simpl.com/errors"
@@ -14,9 +13,9 @@ func (command *CreateUserCommand) ExecuteBusinessLogic() (*models.User, errors.B
 	
 	user := models.User {
 		Name: command.Name,
-		CreditLimit: null.Float64From(command.CreditLimit),
+		CreditLimit: command.CreditLimit,
 		EmailID: command.Email,
-		DueAmount: null.Float64From(float64(0)),
+		DueAmount: 0,
 	}
 	businessError := errors.BusinessLogicError{}
 	defer func() {
@@ -35,7 +34,7 @@ func (command *CreateUserCommand) ExecuteBusinessLogic() (*models.User, errors.B
 	}
 	if len(users) > 0 {
 		businessError.ClientHTTPCode = http.StatusBadRequest
-		businessError.ClientMessage = "Merchant with same name already exists"
+		businessError.ClientMessage = "user with same email already exists"
 
 		return &user, businessError
 	}

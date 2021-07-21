@@ -47,6 +47,6 @@ func (simplePaylaterService simplePaylaterService) StartServing() {
 	// transaction endpoints
 	router.HandleFunc("/transaction/new", simplePaylaterService.NewTransactionEndpointHandler).Methods("POST")
 
-	Logger.Info("Serving on port 8085")
-	Logger.Error(http.ListenAndServe(":8085", router))
+	Logger.Info("Serving on port 8086")
+	Logger.Error(http.ListenAndServe(":8086", router))
 }

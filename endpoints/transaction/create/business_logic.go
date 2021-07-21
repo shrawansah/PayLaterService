@@ -1,14 +1,14 @@
 package createtransaction
 
 import (
+	"context"
 	"net/http"
 
-	"github.com/volatiletech/null/v8"
+	"simpl.com/databases"
 	"simpl.com/errors"
 	. "simpl.com/loggers"
 	. "simpl.com/repositories"
 	"simpl.com/repositories/models"
-	"simpl.com/utils"
 )
 
 func (command *CreateTransactionCommand) ExecuteBusinessLogic() (*models.Transaction, errors.BusinessLogicError) {
@@ -62,28 +62,21 @@ func (command *CreateTransactionCommand) ExecuteBusinessLogic() (*models.Transac
 	}
 	user = *users[0]
 
+	Logger.Info("total_amount :: ", command.Amount)
+	Logger.Info("credit_limit :: ", user.CreditLimit)
+	Logger.Info("due_amount :: ", user.DueAmount)
+
+
 	// credit limit check
-	if utils.RoundUp(command.Amount, 2) > utils.RoundUp(user.CreditLimit.Float64, 2) - utils.RoundUp(user.DueAmount.Float64, 2) {
+	if command.Amount > user.CreditLimit - user.DueAmount {
 		businessError.ClientHTTPCode = http.StatusBadRequest
 		businessError.ClientMessage = "amount exceeds credit_limit"
 
 		return &transaction, businessError
 	}
 
-	totalAmount := utils.RoundUp(command.Amount, 2)
-	discountAmount := utils.RoundUp(totalAmount * merchant.DiscountPercent.Float64 / 100, 2)
-	paidAmount := utils.RoundUp(totalAmount - discountAmount, 2)
-
-	Logger.Info(totalAmount)
-	Logger.Info(discountAmount)
-	Logger.Info(paidAmount)
-
-
-	transaction.TotalAmount = totalAmount
-	transaction.DiscountAmount =  null.Float64From(discountAmount)
-	transaction.PaidAmount = paidAmount
-
-	if err = Repositories.TransactionsRepository.PutTransaction(&transaction, nil); err != nil {
+	sqlTxn, err := databases.GetConnection().BeginTx(context.Background(), nil)
+	if err != nil {
 		Logger.Error(err)
 		businessError.ClientHTTPCode = http.StatusInternalServerError
 		businessError.ClientMessage = "I am a teacup!"
@@ -91,5 +84,32 @@ func (command *CreateTransactionCommand) ExecuteBusinessLogic() (*models.Transac
 		return &transaction, businessError
 	}
 
+
+	totalAmount := command.Amount
+	discountAmount := int64(float64(totalAmount) * merchant.DiscountPercent.Float64 / 100)
+	paidAmount := totalAmount - discountAmount
+
+	transaction.TotalAmount = totalAmount
+	transaction.DiscountAmount =  discountAmount
+	transaction.PaidAmount = paidAmount
+
+	user.DueAmount += paidAmount
+	if _, err := Repositories.UsersRepository.UpdateUser(&user, sqlTxn); err != nil {
+		Logger.Error(err)
+		businessError.ClientHTTPCode = http.StatusInternalServerError
+		businessError.ClientMessage = "I am a teacup!"
+		sqlTxn.Rollback()
+		return &transaction, businessError
+	}
+
+	if err = Repositories.TransactionsRepository.PutTransaction(&transaction, sqlTxn); err != nil {
+		Logger.Error(err)
+		businessError.ClientHTTPCode = http.StatusInternalServerError
+		businessError.ClientMessage = "I am a teacup!"
+		sqlTxn.Rollback()
+		return &transaction, businessError
+	}
+
+	sqlTxn.Commit()
 	return &transaction, businessError
 }
