@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"simpl.com/endpoints/requests"
+	"simpl.com/endpoints/merchant/create"
 	. "simpl.com/loggers"
 )
 
@@ -29,7 +29,7 @@ var events = allEvents{
 
 func (service simplePaylaterService) CreateMerchantEndpointHandler(w http.ResponseWriter, r *http.Request) {
 
-	var createMerchantRequest requests.CreateMerchantRequest
+	var createMerchantRequest createmerchant.CreateMerchantRequest
 	var response interface{}
 
 	defer func() {
@@ -53,7 +53,8 @@ func (service simplePaylaterService) CreateMerchantEndpointHandler(w http.Respon
 	}
 
 	// command
-	createMerchantCommand := createMerchantRequest.BuildCommand()
+	createMerchantCommand := createmerchant.CreateMerchantCommand{}
+	createMerchantCommand.BuildFromRequest(&createMerchantRequest)
 
 	// business logic
 	response, businessError := createMerchantCommand.ExecuteBusinessLogic()
