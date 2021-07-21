@@ -1,4 +1,4 @@
-package services
+package paylater
 
 import (
 	"database/sql"

@@ -3,13 +3,13 @@ package main
 import (
 	. "simpl.com/loggers"
 
-	services "simpl.com/services"
+	"simpl.com/services/paylater"
 )
 func main() {
 
 	Logger.Info("App Started")
 
-	simplePaylaterService := services.NewSimplePaylaterService()
+	simplePaylaterService := paylater.NewSimplePaylaterService()
 	simplePaylaterService.StartServing()
 
 }

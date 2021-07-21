@@ -13,6 +13,7 @@ import (
 type MerchantsRepository interface {
 	GetMerchants(whereClause string, args... interface{}) (models.MerchantSlice, error)
 	PutMerchant(merchant *models.Merchant, tx *sql.Tx) error
+	UpdateMerchant(merchant *models.Merchant, tx *sql.Tx) (int64, error)
 }
 
 type merchantsRepositoryImpl struct {
@@ -34,4 +35,13 @@ func (repo merchantsRepositoryImpl) PutMerchant(merchant *models.Merchant, tx *s
 	}
 
 	return merchant.Insert(context.Background(), contextExecutor, boil.Infer())
+}
+func (repo merchantsRepositoryImpl) UpdateMerchant(merchant *models.Merchant, tx *sql.Tx) (int64, error) {
+	var contextExecutor boil.ContextExecutor
+	contextExecutor = tx
+	if tx == nil {
+		contextExecutor = repo.database
+	}
+
+	return merchant.Update(context.Background(), contextExecutor, boil.Infer())
 }

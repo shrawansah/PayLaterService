@@ -1,4 +1,4 @@
-package services
+package paylater
 
 import (
 	"encoding/json"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"simpl.com/endpoints/merchant/create"
+	"simpl.com/endpoints/merchant/update"
 	. "simpl.com/loggers"
 )
 
@@ -101,23 +102,42 @@ func (service simplePaylaterService) CreateUserEndpointHandler(w http.ResponseWr
 }
 
 func (service simplePaylaterService) UpdateMerchantEndpointHandler(w http.ResponseWriter, r *http.Request) {
-	eventID := mux.Vars(r)["id"]
-	var updatedEvent event
+	var updateMerchantRequest updatemerchant.UpdateMerchantRequest
+	var response interface{}
 
-	reqBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		fmt.Fprintf(w, "Kindly enter data with the event title and description only in order to update")
-	}
-	json.Unmarshal(reqBody, &updatedEvent)
+	defer func() {
+		bytes, _ := json.Marshal(response)
+		Logger.Info(string(bytes))
+		json.NewEncoder(w).Encode(response)
+	}()
 
-	for i, singleEvent := range events {
-		if singleEvent.ID == eventID {
-			singleEvent.Title = updatedEvent.Title
-			singleEvent.Description = updatedEvent.Description
-			events = append(events[:i], singleEvent)
-			json.NewEncoder(w).Encode(singleEvent)
-		}
+	// decode
+	if err := updateMerchantRequest.Decode(r); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		response = "invalid request format"
+		return
 	}
+
+	// validate
+	if errors := updateMerchantRequest.Validate(); len(errors) > 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		response = errors
+		return
+	}
+
+	// command
+	updateMerchantCommand := updatemerchant.UpdateMerchantCommand{}
+	updateMerchantCommand.BuildFromRequest(&updateMerchantRequest)
+
+	// business logic
+	response, businessError := updateMerchantCommand.ExecuteBusinessLogic()
+	if !businessError.IsNil() {
+		w.WriteHeader(businessError.ClientHTTPCode)
+		response = businessError.ClientMessage
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
 }
 
 func (service simplePaylaterService) NewTransactionEndpointHandler(w http.ResponseWriter, r *http.Request) {
