@@ -12,5 +12,6 @@ no-tests = true
   whitelist = [
       "merchants",
       "users",
-      "transactions"
+      "transactions",
+      "paybacks",
   ]

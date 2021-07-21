@@ -5,10 +5,12 @@ package models
 
 var TableNames = struct {
 	Merchants    string
+	Paybacks     string
 	Transactions string
 	Users        string
 }{
 	Merchants:    "merchants",
+	Paybacks:     "paybacks",
 	Transactions: "transactions",
 	Users:        "users",
 }

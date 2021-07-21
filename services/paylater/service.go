@@ -43,6 +43,7 @@ func (simplePaylaterService simplePaylaterService) StartServing() {
 
 	// user endpoints
 	router.HandleFunc("/user/create", simplePaylaterService.CreateUserEndpointHandler).Methods("POST")
+	router.HandleFunc("/user/payback", simplePaylaterService.PaybackUserEndpointHandler).Methods("POST")
 
 	// transaction endpoints
 	router.HandleFunc("/transaction/new", simplePaylaterService.NewTransactionEndpointHandler).Methods("POST")
