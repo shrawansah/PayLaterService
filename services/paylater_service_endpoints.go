@@ -7,14 +7,9 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/volatiletech/null/v8"
+	"simpl.com/endpoints/requests"
 	. "simpl.com/loggers"
-
-	"simpl.com/repositories/models"
 )
-
-
-
 
 type event struct {
 	ID          string `json:"ID"`
@@ -32,49 +27,71 @@ var events = allEvents{
 	},
 }
 
-
 func (service simplePaylaterService) CreateMerchantEndpointHandler(w http.ResponseWriter, r *http.Request) {
-	reqBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		fmt.Fprintf(w, "Kindly enter data with the event title and description only in order to update")
+
+	var createMerchantRequest requests.CreateMerchantRequest
+	var response interface{}
+
+	defer func() {
+		bytes, _ := json.Marshal(response)
+		Logger.Info(string(bytes))
+		json.NewEncoder(w).Encode(response)
+	}()
+
+	// decode
+	if err := createMerchantRequest.Decode(r); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		response = "invalid request format"
+		return
 	}
 
-	var newEvent event
-	json.Unmarshal(reqBody, &newEvent)
-	events = append(events, newEvent)
+	// validate
+	if errors := createMerchantRequest.Validate(); len(errors) > 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		response = errors
+		return
+	}
+
+	// command
+	createMerchantCommand := createMerchantRequest.BuildCommand()
+
+	// business logic
+	response, businessError := createMerchantCommand.ExecuteBusinessLogic()
+	if !businessError.IsNil() {
+		w.WriteHeader(businessError.ClientHTTPCode)
+		response = businessError.ClientMessage
+		return
+	}
+
 	w.WriteHeader(http.StatusCreated)
-
-
-	merchant := models.Merchant {
-		Name: "dominoes",
-		DiscountPercent: null.Float64From(float64(5)),
-	}
-
-	if err := service.MerchantRepository.PutMerchant(&merchant, nil); err != nil {
-		Logger.Error(err)
-	}
-
-	json.NewEncoder(w).Encode(merchant)
 }
 
 func (service simplePaylaterService) GetMerchantInfoEndpointHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusCreated)
 
 	merchantID := mux.Vars(r)["id"]
 	merchants, err := service.MerchantRepository.GetMerchants("id = ?", merchantID)
 	if err != nil {
 		Logger.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode("I am a teacup!")
+		return
+	}
+	if len(merchants) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("Merchant not found!")
+		return
 	}
 
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(merchants)
 }
-func (service simplePaylaterService)  CreateUserEndpointHandler(w http.ResponseWriter, r *http.Request) {
+func (service simplePaylaterService) CreateUserEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	var newEvent event
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Fprintf(w, "Kindly enter data with the event title and description only in order to update")
 	}
-	
+
 	json.Unmarshal(reqBody, &newEvent)
 	events = append(events, newEvent)
 	w.WriteHeader(http.StatusCreated)
@@ -82,7 +99,7 @@ func (service simplePaylaterService)  CreateUserEndpointHandler(w http.ResponseW
 	json.NewEncoder(w).Encode(newEvent)
 }
 
-func (service simplePaylaterService)  UpdateMerchantEndpointHandler(w http.ResponseWriter, r *http.Request) {
+func (service simplePaylaterService) UpdateMerchantEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	eventID := mux.Vars(r)["id"]
 	var updatedEvent event
 
@@ -102,7 +119,7 @@ func (service simplePaylaterService)  UpdateMerchantEndpointHandler(w http.Respo
 	}
 }
 
-func (service simplePaylaterService)  NewTransactionEndpointHandler(w http.ResponseWriter, r *http.Request) {
+func (service simplePaylaterService) NewTransactionEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	eventID := mux.Vars(r)["id"]
 	var updatedEvent event
 
