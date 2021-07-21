@@ -12,6 +12,8 @@ import (
 	"simpl.com/endpoints/merchant/update"
 	"simpl.com/endpoints/merchant/report"
 
+	"simpl.com/endpoints/user/create"
+
 	. "simpl.com/loggers"
 )
 
@@ -31,6 +33,9 @@ var events = allEvents{
 	},
 }
 
+/**
+Merchant Endpoints Begin
+**/
 func (service simplePaylaterService) CreateMerchantEndpointHandler(w http.ResponseWriter, r *http.Request) {
 
 	var createMerchantRequest createmerchant.CreateMerchantRequest
@@ -89,19 +94,6 @@ func (service simplePaylaterService) GetMerchantInfoEndpointHandler(w http.Respo
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(merchants)
-}
-func (service simplePaylaterService) CreateUserEndpointHandler(w http.ResponseWriter, r *http.Request) {
-	var newEvent event
-	reqBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		fmt.Fprintf(w, "Kindly enter data with the event title and description only in order to update")
-	}
-
-	json.Unmarshal(reqBody, &newEvent)
-	events = append(events, newEvent)
-	w.WriteHeader(http.StatusCreated)
-
-	json.NewEncoder(w).Encode(newEvent)
 }
 
 func (service simplePaylaterService) UpdateMerchantEndpointHandler(w http.ResponseWriter, r *http.Request) {
@@ -181,9 +173,61 @@ func (service simplePaylaterService) GenerateMerchantReportEndpointHandler(w htt
 
 	w.WriteHeader(http.StatusCreated)
 }
+/**
+Merchant Endpoints Ends
+**/
 
 
+/**
+User Endpoints Begin
+**/
+func (service simplePaylaterService) CreateUserEndpointHandler(w http.ResponseWriter, r *http.Request) {
+	
+	var createUserRequest createuser.CreateUserRequest
+	var response interface{}
 
+	defer func() {
+		bytes, _ := json.Marshal(response)
+		Logger.Info(string(bytes))
+		json.NewEncoder(w).Encode(response)
+	}()
+
+	// decode
+	if err := createUserRequest.Decode(r); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		response = "invalid request format"
+		return
+	}
+
+	// validate
+	if errors := createUserRequest.Validate(); len(errors) > 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		response = errors
+		return
+	}
+
+	// command
+	createUserCommand := createuser.CreateUserCommand{}
+	createUserCommand.BuildFromRequest(&createUserRequest)
+
+	// business logic
+	response, businessError := createUserCommand.ExecuteBusinessLogic()
+	if !businessError.IsNil() {
+		w.WriteHeader(businessError.ClientHTTPCode)
+		response = businessError.ClientMessage
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+/**
+User Endpoints Ends
+**/
+
+
+/**
+Transaction Endpoints begins
+**/
 func (service simplePaylaterService) NewTransactionEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	eventID := mux.Vars(r)["id"]
 	var updatedEvent event
@@ -203,3 +247,6 @@ func (service simplePaylaterService) NewTransactionEndpointHandler(w http.Respon
 		}
 	}
 }
+/**
+Transaction Endpoints ends
+**/
