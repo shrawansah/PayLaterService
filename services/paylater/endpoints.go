@@ -24,6 +24,8 @@ import (
 Merchant Endpoints Begin
 **/
 func (service simplePaylaterService) CreateMerchantEndpointHandler(w http.ResponseWriter, r *http.Request) {
+	
+	w.Header().Set("Content-Type", "application/json")
 
 	var createMerchantRequest createmerchant.CreateMerchantRequest
 	var response interface{}
@@ -64,6 +66,8 @@ func (service simplePaylaterService) CreateMerchantEndpointHandler(w http.Respon
 }
 
 func (service simplePaylaterService) GetMerchantInfoEndpointHandler(w http.ResponseWriter, r *http.Request) {
+	
+	w.Header().Set("Content-Type", "application/json")
 
 	merchantID := mux.Vars(r)["id"]
 	merchants, err := service.MerchantRepository.GetMerchants("id = ?", merchantID)
@@ -84,6 +88,9 @@ func (service simplePaylaterService) GetMerchantInfoEndpointHandler(w http.Respo
 }
 
 func (service simplePaylaterService) UpdateMerchantEndpointHandler(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "application/json")
+
 	var updateMerchantRequest updatemerchant.UpdateMerchantRequest
 	var response interface{}
 
@@ -123,6 +130,9 @@ func (service simplePaylaterService) UpdateMerchantEndpointHandler(w http.Respon
 }
 
 func (service simplePaylaterService) GenerateMerchantReportEndpointHandler(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "application/json")
+
 	var merchantReportRequest merchantreport.MerchantReportRequest
 	var response interface{}
 
@@ -170,6 +180,7 @@ User Endpoints Begin
 **/
 func (service simplePaylaterService) CreateUserEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	
+	w.Header().Set("Content-Type", "application/json")
 	var createUserRequest createuser.CreateUserRequest
 	var response interface{}
 
@@ -210,6 +221,7 @@ func (service simplePaylaterService) CreateUserEndpointHandler(w http.ResponseWr
 
 func (service simplePaylaterService) PaybackUserEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	
+	w.Header().Set("Content-Type", "application/json")
 	var paybackUserRequest userpayback.PaybackUserRequest
 	var response interface{}
 
@@ -250,6 +262,7 @@ func (service simplePaylaterService) PaybackUserEndpointHandler(w http.ResponseW
 
 func (service simplePaylaterService) UserReportEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	
+	w.Header().Set("Content-Type", "application/json")
 	var userReportRequest userreport.UserReportRequest
 	var response interface{}
 
@@ -297,6 +310,7 @@ Transaction Endpoints begins
 **/
 func (service simplePaylaterService) NewTransactionEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	
+	w.Header().Set("Content-Type", "application/json")
 	var createTransactionRequest createtransaction.CreateTransactionRequest
 	var response interface{}
 
