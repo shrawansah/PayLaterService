@@ -7,8 +7,11 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+
 	"simpl.com/endpoints/merchant/create"
 	"simpl.com/endpoints/merchant/update"
+	"simpl.com/endpoints/merchant/report"
+
 	. "simpl.com/loggers"
 )
 
@@ -139,6 +142,47 @@ func (service simplePaylaterService) UpdateMerchantEndpointHandler(w http.Respon
 
 	w.WriteHeader(http.StatusCreated)
 }
+
+func (service simplePaylaterService) GenerateMerchantReportEndpointHandler(w http.ResponseWriter, r *http.Request) {
+	var merchantReportRequest merchantreport.MerchantReportRequest
+	var response interface{}
+
+	defer func() {
+		bytes, _ := json.Marshal(response)
+		Logger.Info(string(bytes))
+		json.NewEncoder(w).Encode(response)
+	}()
+
+	// decode
+	if err := merchantReportRequest.Decode(r); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		response = "invalid request format"
+		return
+	}
+
+	// validate
+	if errors := merchantReportRequest.Validate(); len(errors) > 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		response = errors
+		return
+	}
+
+	// command
+	merchantReportCommand := merchantreport.MerchantReportCommand{}
+	merchantReportCommand.BuildFromRequest(&merchantReportRequest)
+
+	// business logic
+	response, businessError := merchantReportCommand.ExecuteBusinessLogic()
+	if !businessError.IsNil() {
+		w.WriteHeader(businessError.ClientHTTPCode)
+		response = businessError.ClientMessage
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+
 
 func (service simplePaylaterService) NewTransactionEndpointHandler(w http.ResponseWriter, r *http.Request) {
 	eventID := mux.Vars(r)["id"]

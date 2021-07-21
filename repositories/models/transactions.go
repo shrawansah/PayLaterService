@@ -24,52 +24,57 @@ import (
 
 // Transaction is an object representing the database table.
 type Transaction struct {
-	ID              int          `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID          int          `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	MerchantID      int          `boil:"merchant_id" json:"merchant_id" toml:"merchant_id" yaml:"merchant_id"`
-	TotalAmount     float64      `boil:"total_amount" json:"total_amount" toml:"total_amount" yaml:"total_amount"`
-	DiscountApplied null.Float64 `boil:"discount_applied" json:"discount_applied,omitempty" toml:"discount_applied" yaml:"discount_applied,omitempty"`
-	CreatedAt       time.Time    `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	ModifiedAt      time.Time    `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
+	ID             int          `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID         int          `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	MerchantID     int          `boil:"merchant_id" json:"merchant_id" toml:"merchant_id" yaml:"merchant_id"`
+	TotalAmount    float64      `boil:"total_amount" json:"total_amount" toml:"total_amount" yaml:"total_amount"`
+	DiscountAmount null.Float64 `boil:"discount_amount" json:"discount_amount,omitempty" toml:"discount_amount" yaml:"discount_amount,omitempty"`
+	PaidAmount     float64      `boil:"paid_amount" json:"paid_amount" toml:"paid_amount" yaml:"paid_amount"`
+	CreatedAt      time.Time    `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ModifiedAt     time.Time    `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
 
 	R *transactionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L transactionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var TransactionColumns = struct {
-	ID              string
-	UserID          string
-	MerchantID      string
-	TotalAmount     string
-	DiscountApplied string
-	CreatedAt       string
-	ModifiedAt      string
+	ID             string
+	UserID         string
+	MerchantID     string
+	TotalAmount    string
+	DiscountAmount string
+	PaidAmount     string
+	CreatedAt      string
+	ModifiedAt     string
 }{
-	ID:              "id",
-	UserID:          "user_id",
-	MerchantID:      "merchant_id",
-	TotalAmount:     "total_amount",
-	DiscountApplied: "discount_applied",
-	CreatedAt:       "created_at",
-	ModifiedAt:      "modified_at",
+	ID:             "id",
+	UserID:         "user_id",
+	MerchantID:     "merchant_id",
+	TotalAmount:    "total_amount",
+	DiscountAmount: "discount_amount",
+	PaidAmount:     "paid_amount",
+	CreatedAt:      "created_at",
+	ModifiedAt:     "modified_at",
 }
 
 var TransactionTableColumns = struct {
-	ID              string
-	UserID          string
-	MerchantID      string
-	TotalAmount     string
-	DiscountApplied string
-	CreatedAt       string
-	ModifiedAt      string
+	ID             string
+	UserID         string
+	MerchantID     string
+	TotalAmount    string
+	DiscountAmount string
+	PaidAmount     string
+	CreatedAt      string
+	ModifiedAt     string
 }{
-	ID:              "transactions.id",
-	UserID:          "transactions.user_id",
-	MerchantID:      "transactions.merchant_id",
-	TotalAmount:     "transactions.total_amount",
-	DiscountApplied: "transactions.discount_applied",
-	CreatedAt:       "transactions.created_at",
-	ModifiedAt:      "transactions.modified_at",
+	ID:             "transactions.id",
+	UserID:         "transactions.user_id",
+	MerchantID:     "transactions.merchant_id",
+	TotalAmount:    "transactions.total_amount",
+	DiscountAmount: "transactions.discount_amount",
+	PaidAmount:     "transactions.paid_amount",
+	CreatedAt:      "transactions.created_at",
+	ModifiedAt:     "transactions.modified_at",
 }
 
 // Generated where
@@ -125,21 +130,23 @@ func (w whereHelpertime_Time) GTE(x time.Time) qm.QueryMod {
 }
 
 var TransactionWhere = struct {
-	ID              whereHelperint
-	UserID          whereHelperint
-	MerchantID      whereHelperint
-	TotalAmount     whereHelperfloat64
-	DiscountApplied whereHelpernull_Float64
-	CreatedAt       whereHelpertime_Time
-	ModifiedAt      whereHelpertime_Time
+	ID             whereHelperint
+	UserID         whereHelperint
+	MerchantID     whereHelperint
+	TotalAmount    whereHelperfloat64
+	DiscountAmount whereHelpernull_Float64
+	PaidAmount     whereHelperfloat64
+	CreatedAt      whereHelpertime_Time
+	ModifiedAt     whereHelpertime_Time
 }{
-	ID:              whereHelperint{field: "`transactions`.`id`"},
-	UserID:          whereHelperint{field: "`transactions`.`user_id`"},
-	MerchantID:      whereHelperint{field: "`transactions`.`merchant_id`"},
-	TotalAmount:     whereHelperfloat64{field: "`transactions`.`total_amount`"},
-	DiscountApplied: whereHelpernull_Float64{field: "`transactions`.`discount_applied`"},
-	CreatedAt:       whereHelpertime_Time{field: "`transactions`.`created_at`"},
-	ModifiedAt:      whereHelpertime_Time{field: "`transactions`.`modified_at`"},
+	ID:             whereHelperint{field: "`transactions`.`id`"},
+	UserID:         whereHelperint{field: "`transactions`.`user_id`"},
+	MerchantID:     whereHelperint{field: "`transactions`.`merchant_id`"},
+	TotalAmount:    whereHelperfloat64{field: "`transactions`.`total_amount`"},
+	DiscountAmount: whereHelpernull_Float64{field: "`transactions`.`discount_amount`"},
+	PaidAmount:     whereHelperfloat64{field: "`transactions`.`paid_amount`"},
+	CreatedAt:      whereHelpertime_Time{field: "`transactions`.`created_at`"},
+	ModifiedAt:     whereHelpertime_Time{field: "`transactions`.`modified_at`"},
 }
 
 // TransactionRels is where relationship names are stored.
@@ -159,9 +166,9 @@ func (*transactionR) NewStruct() *transactionR {
 type transactionL struct{}
 
 var (
-	transactionAllColumns            = []string{"id", "user_id", "merchant_id", "total_amount", "discount_applied", "created_at", "modified_at"}
-	transactionColumnsWithoutDefault = []string{"id", "user_id", "merchant_id", "total_amount"}
-	transactionColumnsWithDefault    = []string{"discount_applied", "created_at", "modified_at"}
+	transactionAllColumns            = []string{"id", "user_id", "merchant_id", "total_amount", "discount_amount", "paid_amount", "created_at", "modified_at"}
+	transactionColumnsWithoutDefault = []string{"id", "user_id", "merchant_id", "total_amount", "paid_amount"}
+	transactionColumnsWithDefault    = []string{"discount_amount", "created_at", "modified_at"}
 	transactionPrimaryKeyColumns     = []string{"id"}
 )
 

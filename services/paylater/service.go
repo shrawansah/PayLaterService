@@ -39,6 +39,7 @@ func (simplePaylaterService simplePaylaterService) StartServing() {
 	router.HandleFunc("/merchant/{id}", simplePaylaterService.GetMerchantInfoEndpointHandler).Methods("GET")
 	router.HandleFunc("/merchant/create", simplePaylaterService.CreateMerchantEndpointHandler).Methods("POST")
 	router.HandleFunc("/merchant/update", simplePaylaterService.UpdateMerchantEndpointHandler).Methods("PATCH")
+	router.HandleFunc("/merchant/report/{id}", simplePaylaterService.GenerateMerchantReportEndpointHandler).Methods("GET")
 
 	// user endpoints
 	router.HandleFunc("/user/create", simplePaylaterService.CreateUserEndpointHandler).Methods("POST")
