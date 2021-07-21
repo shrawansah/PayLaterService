@@ -58,8 +58,9 @@ func (repo usersRepositoryImpl) GetAllStats(userID string) (UserStatistics, erro
 	var usersAtLimitMap = make(map[int64]bool)
 
 	var propagator = UserStatistics{
-		Users: users,
-		UsersAtLimit: usersAtLimit,
+		Users: 			users,
+		UsersAtLimit: 	usersAtLimit,
+		TotalDueAmount: 0,
 	}
 
 	query := "select transactions.id as transaction_id, due_amount, credit_limit, user_id, total_amount, discount_amount, paid_amount from users inner join transactions on users.id = transactions.user_id "
@@ -105,6 +106,10 @@ func (repo usersRepositoryImpl) GetAllStats(userID string) (UserStatistics, erro
 	for key, _ := range usersAtLimitMap {
 		propagator.UsersAtLimit = append(propagator.UsersAtLimit, key)
 	}
+	for _, userData := range propagator.Users {
+		propagator.TotalDueAmount += userData["total_due_amount"]
+
+	}
 
 	return propagator, nil
 }
@@ -126,4 +131,5 @@ type userTotalStatistics struct {
 type UserStatistics struct {
 	Users    						map[int64]map[string]int64    `json:"users" boil:"users"`
 	UsersAtLimit					[]int64						  `json:"users_at_credit_limit" boil:"users_at_credit_limit"`
+	TotalDueAmount					int64						  `json:"total_due_amount" boil:"total_due_amount"`
 }

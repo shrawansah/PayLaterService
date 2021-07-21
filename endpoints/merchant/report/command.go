@@ -19,5 +19,8 @@ func (merchantReportCommand *MerchantReportCommand) ToString() string {
 func (command *MerchantReportCommand) BuildFromRequest(request *MerchantReportRequest) {
 
 	command.ID = request.ID
+	if request.ID == "all" {
+		command.ID = ""
+	}
 	Logger.Info("MerchantReportCommand :: ", command.ToString())
 }
