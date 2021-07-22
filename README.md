@@ -1,6 +1,6 @@
 # PayLaterService
 
-This is a sample pay pater service exposed as REST APIs
+This is a sample pay later service exposed as REST APIs
 
 As a pay later service we allow our users to buy goods from a merchant now, and then allow
 them to pay for those goods at a later date.
