@@ -3,14 +3,15 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	"strconv"
 
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 
-	"simpl.com/repositories/models"
 	"simpl.com/configs"
 	. "simpl.com/loggers"
+	"simpl.com/repositories/models"
 )
 
 type UsersRepository interface {
@@ -64,9 +65,6 @@ func (repo usersRepositoryImpl) GetAllStats(userID string) (UserStatistics, erro
 	}
 
 	query := "select transactions.id as transaction_id, due_amount, credit_limit, user_id, total_amount, discount_amount, paid_amount from users inner join transactions on users.id = transactions.user_id "
-	if userID != "" {
-		query += " where user_id = " + userID
-	}
 
 	if err := queries.Raw(query).Bind(context.Background(), repo.database, &stats); err != nil {
 		Logger.Error(err)
@@ -106,9 +104,13 @@ func (repo usersRepositoryImpl) GetAllStats(userID string) (UserStatistics, erro
 	for key, _ := range usersAtLimitMap {
 		propagator.UsersAtLimit = append(propagator.UsersAtLimit, key)
 	}
-	for _, userData := range propagator.Users {
-		propagator.TotalDueAmount += userData["total_due_amount"]
 
+	userIDInt64, _ := strconv.ParseInt(userID, 10, 64)
+	for key, userData := range propagator.Users {
+		propagator.TotalDueAmount += userData["total_due_amount"]
+		if userID != "" && key != userIDInt64 {
+			delete(propagator.Users , key);
+		}
 	}
 
 	return propagator, nil
