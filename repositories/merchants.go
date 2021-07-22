@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	"strconv"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
@@ -57,6 +58,7 @@ func (repo merchantsRepositoryImpl) GetAllStats(merchantID string) (map[int64]ma
 	if merchantID != "" {
 		query = "SELECT merchant_id, count(*) as total_transaction_count, SUM(discount_amount) as total_discount_amount, SUM(paid_amount) as total_paid_amount, SUM(total_amount) as total_transaction_amount from transactions where merchant_id = " + merchantID
 	}
+
 	if err := queries.Raw(query).Bind(context.Background(), repo.database, &stats); err != nil {
 		Logger.Error(err)
 		return propagator, err
@@ -70,7 +72,33 @@ func (repo merchantsRepositoryImpl) GetAllStats(merchantID string) (map[int64]ma
 		value["total_discount_amount"] = stat.TotalDiscountAmount.Int64
 		value["total_paid_amount"] = stat.TotalPaidAmount.Int64
 
-		propagator[stat.MerchantID.Int64] = value
+		merchantIDInt64 := stat.MerchantID.Int64
+		if merchantID != "" {
+			val, _ := strconv.ParseInt(merchantID, 10, 64)
+			merchantIDInt64 = val
+		}
+
+		propagator[merchantIDInt64] = value
+	}
+
+	if merchantID == "" {
+		merchants, err := models.Merchants(qm.Where("id > ?", 0)).All(context.Background(), repo.database)
+		if err != nil {
+			Logger.Error(err)
+			return propagator, err
+		}
+
+		for _, merchant := range merchants {
+			if _, ok := propagator[merchant.ID]; !ok {
+				var value = make(map[string]int64)
+				value["total_transaction_count"] = 0
+				value["total_transaction_amount"] = 0
+				value["total_discount_amount"] = 0
+				value["total_paid_amount"] = 0
+
+				propagator[merchant.ID] = value
+			}
+		}
 	}
 
 	return propagator, nil
