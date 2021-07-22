@@ -96,7 +96,7 @@ func (repo usersRepositoryImpl) GetAllStats(userID string) (UserStatistics, erro
 		propagator.Users[userID]["total_discount_amount"] += stat.TotalDiscountAmount.Int64
 		propagator.Users[userID]["total_credit_limit"] = stat.UserCreditLimit.Int64
 
-		if stat.UserCreditLimit.Int64 - stat.TotalDueAmount.Int64 < configs.Configs.UserAtCreditLimitThreshold {
+		if stat.UserCreditLimit.Int64 - stat.TotalDueAmount.Int64 <= configs.Configs.UserAtCreditLimitThreshold {
 			usersAtLimitMap[userID] = true
 		}
 	}

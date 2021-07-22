@@ -93,7 +93,7 @@ func (command *CreateTransactionCommand) ExecuteBusinessLogic() (*models.Transac
 	transaction.DiscountAmount =  discountAmount
 	transaction.PaidAmount = paidAmount
 
-	user.DueAmount += paidAmount
+	user.DueAmount += totalAmount
 	if _, err := Repositories.UsersRepository.UpdateUser(&user, sqlTxn); err != nil {
 		Logger.Error(err)
 		businessError.ClientHTTPCode = http.StatusInternalServerError

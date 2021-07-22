@@ -23,5 +23,5 @@ var Configs = configs {
 	DBPort: "3306",
 	DBDriver: "mysql",
 
-	UserAtCreditLimitThreshold: 10,
+	UserAtCreditLimitThreshold: 0,
 }
